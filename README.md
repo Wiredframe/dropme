@@ -32,7 +32,15 @@ Teilen läuft über die Dienste von macOS (AirDrop, Mail …), DropMe selbst sen
 
 ## Installation
 
-`DropMe-<Version>.zip` unter [Releases](../../releases) laden, entpacken, `DropMe.app` nach `/Applications` ziehen.
+Per Homebrew:
+
+```sh
+brew tap wiredframe/tap
+brew trust --cask wiredframe/tap/dropme
+brew install --cask wiredframe/tap/dropme
+```
+
+Oder von Hand: `DropMe-<Version>.zip` unter [Releases](../../releases) laden, entpacken, `DropMe.app` nach `/Applications` ziehen.
 
 Die App ist nur ad hoc signiert, nicht notarisiert. Beim ersten Start blockiert macOS sie deshalb. Entweder in den Systemeinstellungen unter „Datenschutz & Sicherheit“ auf „Trotzdem öffnen“ klicken oder einmal im Terminal:
 
