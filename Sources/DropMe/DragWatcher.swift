@@ -1,10 +1,10 @@
 import AppKit
 
-/// Meldet, sobald in einer anderen App Dateien mit gedrückter Umschalttaste gezogen werden.
-/// Liest dabei nur die Typen auf dem Drag-Pasteboard, nie den Inhalt.
+/// Reports when files are dragged in another app while Shift is held down.
+/// Only looks at the types on the drag pasteboard, never at its contents.
 final class DragWatcher {
     var onTrigger: ((NSPoint) -> Void)?
-    /// Maustaste losgelassen, nachdem ein Fenster geöffnet wurde.
+    /// Mouse button released after a shelf was opened.
     var onDragEnded: (() -> Void)?
 
     private let pasteboard = NSPasteboard(name: .drag)

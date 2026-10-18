@@ -1,17 +1,17 @@
 import AppKit
 
-/// Kleine, zurückhaltende Animationen. Bei „Bewegung reduzieren“ bleibt nur das Überblenden.
+/// Small, restrained animations. With “Reduce motion” only the cross-fades remain.
 extension NSView {
     var reduceMotion: Bool { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
 
-    /// Dynamische Farben (labelColor …) passend zum aktuellen Erscheinungsbild als CGColor.
+    /// Dynamic colors (labelColor …) resolved for the current appearance as CGColor.
     func resolved(_ color: NSColor) -> CGColor {
         var result = color.cgColor
         effectiveAppearance.performAsCurrentDrawingAppearance { result = color.cgColor }
         return result
     }
 
-    /// Setzt eine Ebeneneigenschaft und blendet vom aktuell sichtbaren Wert dorthin über.
+    /// Sets a layer property and animates there from the currently visible value.
     func animate(_ layer: CALayer?, key: String, to value: Any?, duration: CFTimeInterval, set: (CALayer) -> Void) {
         guard let layer else { return }
         let from = (layer.presentation() ?? layer).value(forKeyPath: key)
@@ -25,7 +25,7 @@ extension NSView {
         layer.add(animation, forKey: key)
     }
 
-    /// Blendet die nächste Änderung an Inhalt oder Sichtbarkeit weich über.
+    /// Cross-fades the next change of content or visibility.
     func crossfade(_ layer: CALayer?, duration: CFTimeInterval) {
         let transition = CATransition()
         transition.type = .fade
@@ -33,14 +33,14 @@ extension NSView {
         layer?.add(transition, forKey: "crossfade")
     }
 
-    /// Skalierung um die Mitte; AppKit legt den Ankerpunkt der Ebene auf die Ecke unten links.
+    /// Scale around the center; AppKit puts the layer's anchor point at the bottom left corner.
     func centeredScale(_ scale: CGFloat) -> CATransform3D {
         let b = bounds
         return CATransform3DConcat(CATransform3DMakeScale(scale, scale, 1),
                                    CATransform3DMakeTranslation(b.width * (1 - scale) / 2, b.height * (1 - scale) / 2, 0))
     }
 
-    /// Federt von einer leicht anderen Größe zurück auf 100 %.
+    /// Springs back to 100 % from a slightly different size.
     func pop(from scale: CGFloat) {
         guard let layer, window != nil, !reduceMotion else { return }
         let spring = CASpringAnimation(keyPath: "transform")

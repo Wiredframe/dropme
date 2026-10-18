@@ -1,8 +1,8 @@
 import Foundation
 
-/// Ordner für „Kopieren nach“ und „Bewegen nach“.
-/// Schnellziele erscheinen zusätzlich direkt im Menü und kopieren dorthin. Gepflegt werden sie
-/// in den Einstellungen, gespeichert als `Schnellziele` = [{name, path}, …] in den Defaults.
+/// Folders for “Copy to” and “Move to”.
+/// Quick destinations also appear directly in the menu and copy there. They are managed in the
+/// settings and stored in the defaults as `Schnellziele` = [{name, path}, …].
 struct Destination {
     let name: String
     let url: URL
@@ -18,7 +18,7 @@ struct Destination {
         }
     }
 
-    /// Alle gespeicherten Schnellziele, auch solche, deren Ordner gerade fehlt.
+    /// All stored quick destinations, including those whose folder is currently missing.
     static var quickStored: [Destination] {
         get {
             let entries = UserDefaults.standard.array(forKey: "Schnellziele") ?? []
@@ -27,7 +27,7 @@ struct Destination {
                 if let dict = entry as? [String: String], let n = dict["name"], let p = dict["path"] {
                     (name, path) = (n, p)
                 } else if let text = entry as? String {
-                    // Älteres Format „Name=Pfad“; der Pfad beginnt mit / oder ~, das letzte solche „=“ trennt.
+                    // Older format “Name=Path”; the path starts with / or ~, the last such “=” separates.
                     guard let split = text.range(of: "=/", options: .backwards) ?? text.range(of: "=~", options: .backwards)
                     else { return nil }
                     (name, path) = (String(text[..<split.lowerBound]), String(text[text.index(after: split.lowerBound)...]))
@@ -44,7 +44,7 @@ struct Destination {
         }
     }
 
-    /// Schnellziele, deren Ordner existiert.
+    /// Quick destinations whose folder exists.
     static var quick: [Destination] {
         quickStored.filter { dest in
             var isDir: ObjCBool = false
@@ -52,7 +52,7 @@ struct Destination {
         }
     }
 
-    /// Freier Zielname im Ordner: „Datei.pdf“, sonst „Datei 2.pdf“, „Datei 3.pdf“ …
+    /// Free file name in the folder: “File.pdf”, otherwise “File 2.pdf”, “File 3.pdf” …
     static func freeURL(for name: String, in dir: URL) -> URL {
         let fm = FileManager.default
         var candidate = dir.appendingPathComponent(name)

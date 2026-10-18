@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// Einstellungen: Schnellziele mit Anzeigename und Zielordner.
+/// Settings: quick destinations with display name and target folder.
 enum SettingsWindow {
     private static var window: NSWindow?
 

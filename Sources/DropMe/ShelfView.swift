@@ -2,14 +2,14 @@ import AppKit
 import Quartz
 import QuickLookThumbnailing
 
-/// Inhalt eines Fensters: nimmt Dateien an, zeigt sie als Stapel, gibt sie per Ziehen wieder ab.
+/// Content of a shelf: accepts files, shows them as a stack, hands them out again by dragging.
 final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
     private(set) var items: [URL] = []
     private var thumbnails: [URL: NSImage] = [:]
-    /// Echte Vorschauen (keine Symbole) bekommen runde Ecken und Schatten.
+    /// Real previews (not icons) get rounded corners and a shadow.
     private var framed: Set<URL> = []
     private var dragStart: NSPoint?
-    /// Wurde schon einmal etwas abgelegt? Sonst schließt ein abgebrochenes Ziehen das leere Fenster.
+    /// Has anything been dropped yet? If not, a cancelled drag closes the empty shelf.
     private(set) var hasReceivedDrop = false
 
     private let handle = NSView()
@@ -98,7 +98,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         pill.isHidden = items.isEmpty
         pill.title = items.count == 1 ? items[0].lastPathComponent : "\(items.count) Objekte"
         stack.images = items.suffix(3).map { (image(for: $0), framed.contains($0)) }
-        // Die Pille gleitet auf ihre neue Breite.
+        // The pill glides to its new width.
         let target = pillFrame()
         if window != nil, !reduceMotion, !pill.isHidden, pill.frame.width > 0, pill.frame != target {
             NSAnimationContext.runAnimationGroup { context in
@@ -112,7 +112,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         }
     }
 
-    // MARK: Inhalt
+    // MARK: Content
 
     func add(_ urls: [URL]) {
         let new = urls.filter { !items.contains($0) }
@@ -151,7 +151,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         }
     }
 
-    /// Ablage für zugesagte Dateien (z. B. Anhänge aus Mail), räumt das System selbst auf.
+    /// Location for promised files (e.g. attachments from Mail); the system cleans it up itself.
     private static func promiseDirectory() -> URL {
         let dir = FileManager.default.temporaryDirectory
             .appendingPathComponent("DropMe", isDirectory: true)
@@ -160,7 +160,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         return dir
     }
 
-    // MARK: Hineinziehen
+    // MARK: Dragging in
 
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         if (sender.draggingSource as? ShelfView) === self { return [] }
@@ -198,7 +198,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         return false
     }
 
-    // MARK: Herausziehen
+    // MARK: Dragging out
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override var acceptsFirstResponder: Bool { true }
@@ -247,7 +247,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
 
     func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
         guard !operation.isEmpty else { return }
-        // Hat das Ziel die Dateien bewegt, verschwinden sie hier; der Finder braucht dafür einen Moment.
+        // If the destination moved the files, they disappear here; the Finder needs a moment for that.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
             guard let self else { return }
             let remaining = self.items.filter { FileManager.default.fileExists(atPath: $0.path) }
@@ -256,7 +256,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         }
     }
 
-    // MARK: Tastatur
+    // MARK: Keyboard
 
     override func keyDown(with event: NSEvent) {
         switch event.charactersIgnoringModifiers {
@@ -266,7 +266,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         }
     }
 
-    /// DropMe hat kein Hauptmenü, darum laufen ⌘C, ⌘V und ⌘W hier direkt.
+    /// DropMe has no main menu, so ⌘C, ⌘V and ⌘W are handled here directly.
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         guard event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command,
               window?.isKeyWindow == true else { return super.performKeyEquivalent(with: event) }
@@ -279,14 +279,14 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         return true
     }
 
-    // MARK: Menüs
+    // MARK: Menus
 
     @objc private func showActionMenu(_ sender: NSButton) {
         pruneMissing()
         popUp(actionMenu(), from: sender)
     }
 
-    /// Entfernt Objekte, deren Datei inzwischen gelöscht oder woanders hin bewegt wurde.
+    /// Removes items whose file has since been deleted or moved elsewhere.
     private func pruneMissing() {
         let existing = items.filter { FileManager.default.fileExists(atPath: $0.path) }
         if existing.count != items.count { setItems(existing) }
@@ -342,7 +342,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         }
 
         let paste = item("Aus Zwischenablage hinzufügen", "doc.on.clipboard", #selector(addFromClipboard))
-        // Nur die Typen prüfen: Inhalte lesen erst beim Klick, sonst fragt macOS nach Zugriff auf die Zwischenablage.
+        // Only check the types: read contents on click only, otherwise macOS asks for clipboard access.
         paste.isEnabled = NSPasteboard.general.types?.contains(.fileURL) == true
         menu.addItem(paste)
 
@@ -424,7 +424,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         return "\(name.prefix(10))…\(name.suffix(10))"
     }
 
-    // MARK: Aktionen
+    // MARK: Actions
 
     @objc private func closeShelf() { dismiss() }
 
@@ -499,7 +499,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         return panel.runModal() == .OK ? panel.url : nil
     }
 
-    /// Kopiert oder bewegt alle Objekte in den Ordner. Liefert true, wenn alles geklappt hat.
+    /// Copies or moves all items into the folder. Returns true if everything worked.
     @discardableResult
     private func transfer(to dir: URL, move: Bool) -> Bool {
         let fm = FileManager.default
@@ -528,7 +528,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         return true
     }
 
-    // MARK: Schnellansicht
+    // MARK: Quick Look
 
     @objc private func showQuickLook() {
         pruneMissing()
@@ -561,7 +561,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
     }
 }
 
-/// Runder Knopf mit Symbol, wie oben links und rechts im Fenster.
+/// Round button with a symbol, as at the top left and right of the shelf.
 final class CircleButton: NSButton {
     private var hover = HoverFill()
 
@@ -602,7 +602,7 @@ final class CircleButton: NSButton {
     }
 }
 
-/// Dezente Fläche hinter Knöpfen, heller beim Überfahren, dunkler beim Drücken.
+/// Subtle fill behind buttons, lighter on hover, darker when pressed.
 struct HoverFill {
     var isHovered = false
     var isPressed = false
@@ -623,7 +623,7 @@ struct HoverFill {
     }
 }
 
-/// Zeigt bis zu drei Vorschaubilder leicht gefächert übereinander.
+/// Shows up to three previews slightly fanned on top of each other.
 final class StackView: NSView {
     weak var shelf: ShelfView?
     var images: [(image: NSImage, framed: Bool)] = [] { didSet { needsDisplay = true } }
@@ -649,7 +649,7 @@ final class StackView: NSView {
         let count = images.count
         for (index, entry) in images.enumerated() {
             let image = entry.image
-            // Das zuletzt hinzugefügte Bild liegt oben und gerade.
+            // The most recently added image lies on top and straight.
             let angle = Self.angles[count - 1 - index]
             NSGraphicsContext.saveGraphicsState()
             let transform = NSAffineTransform()
@@ -675,7 +675,7 @@ final class StackView: NSView {
     }
 }
 
-/// Pille unten im Fenster: Name bzw. Anzahl, dahinter ein Chevron. Klick öffnet die Liste.
+/// Pill at the bottom of the shelf: name or count, followed by a chevron. A click opens the list.
 final class PillView: NSView {
     var onClick: (() -> Void)?
     var title = "" {

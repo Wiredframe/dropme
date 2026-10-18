@@ -1,7 +1,7 @@
 import AppKit
 import Quartz
 
-/// Schwebendes Fenster ohne Rahmen, das die App nicht aktiviert.
+/// Floating borderless panel that doesn't activate the app.
 final class ShelfWindow: NSPanel {
     static let size = NSSize(width: 200, height: 210)
     static let cornerRadius: CGFloat = 34
@@ -34,7 +34,7 @@ final class ShelfWindow: NSPanel {
 
     private var isDismissing = false
 
-    /// Erscheint mit kurzem Einblenden und federt dabei aus leicht kleinerer Größe auf.
+    /// Fades in briefly while springing up from a slightly smaller size.
     func present() {
         alphaValue = 0
         orderFrontRegardless()
@@ -46,7 +46,7 @@ final class ShelfWindow: NSPanel {
         contentView?.pop(from: 0.92)
     }
 
-    /// Blendet aus und schrumpft minimal, dann wird geschlossen.
+    /// Fades out and shrinks a little, then closes.
     func dismiss() {
         guard !isDismissing else { return }
         isDismissing = true
@@ -80,7 +80,7 @@ final class ShelfWindow: NSPanel {
         onClose = nil
     }
 
-    /// Hintergrund in einer abgerundeten, beschnittenen Hülle, damit Schatten und Ecken sauber rund sind.
+    /// Background in a rounded, clipping container so the shadow and corners are cleanly round.
     private func makeBackground() -> NSView {
         let container = NSView(frame: shelf.frame)
         container.wantsLayer = true

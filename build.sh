@@ -1,10 +1,10 @@
 #!/bin/zsh
-# Baut DropMe.app (Apple Silicon) nach build/, mit --install zusätzlich nach ~/Applications und startet es,
-# mit --zip zusätzlich build/DropMe-<Version>.zip für ein GitHub-Release.
+# Builds DropMe.app (Apple Silicon) into build/; with --install also copies it to ~/Applications and launches it,
+# with --zip also creates build/DropMe-<version>.zip for a GitHub release.
 #
-# Signiert wird mit dem ersten „Developer ID Application“-Zertifikat im Schlüsselbund, sonst ad hoc.
-# Mit --zip wird außerdem notarisiert, wenn ein notarytool-Profil existiert (Name in NOTARY_PROFILE,
-# Standard „notary“, anlegen mit `xcrun notarytool store-credentials notary`).
+# Signs with the first “Developer ID Application” certificate in the keychain, otherwise ad hoc.
+# With --zip it also notarizes if a notarytool profile exists (name in NOTARY_PROFILE,
+# default “notary”, create it with `xcrun notarytool store-credentials notary`).
 set -euo pipefail
 cd "${0:A:h}"
 
@@ -23,13 +23,13 @@ cp Resources/Info.plist "$APP/Contents/"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/"
 if [[ -n "$IDENTITY" ]]; then
     codesign --force --sign "$IDENTITY" --options runtime --timestamp "$APP"
-    echo "Signiert: $IDENTITY"
+    echo "Signed: $IDENTITY"
 else
     codesign --force --sign - --options runtime "$APP"
-    echo "Signiert: ad hoc (kein Developer-ID-Zertifikat gefunden)"
+    echo "Signed: ad hoc (no Developer ID certificate found)"
 fi
 codesign --verify --strict "$APP"
-echo "Gebaut: $APP ($VERSION)"
+echo "Built: $APP ($VERSION)"
 
 if [[ "${1:-}" == "--zip" ]]; then
     ZIP="build/DropMe-$VERSION.zip"
@@ -40,11 +40,11 @@ if [[ "${1:-}" == "--zip" ]]; then
         xcrun stapler staple "$APP"
         rm -f "$ZIP"
         ditto -c -k --keepParent "$APP" "$ZIP"
-        echo "Notarisiert und geheftet"
+        echo "Notarized and stapled"
     else
-        echo "Nicht notarisiert (kein notarytool-Profil „$NOTARY_PROFILE“)"
+        echo "Not notarized (no notarytool profile “$NOTARY_PROFILE”)"
     fi
-    echo "Archiv: $ZIP"
+    echo "Archive: $ZIP"
 fi
 
 if [[ "${1:-}" == "--install" ]]; then
@@ -53,5 +53,5 @@ if [[ "${1:-}" == "--install" ]]; then
     rm -rf ~/Applications/DropMe.app
     ditto "$APP" ~/Applications/DropMe.app
     open ~/Applications/DropMe.app
-    echo "Installiert: ~/Applications/DropMe.app"
+    echo "Installed: ~/Applications/DropMe.app"
 fi

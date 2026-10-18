@@ -5,7 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private let watcher = DragWatcher()
     private var shelves: [ShelfWindow] = []
-    /// Das zuletzt per Ziehen geöffnete Fenster, solange noch nichts darin gelandet ist.
+    /// The shelf last opened by dragging, as long as nothing has been dropped on it.
     private weak var dragShelf: ShelfWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -34,7 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(withTitle: "DropMe beenden", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
     }
 
-    /// „Öffnen mit DropMe“ bzw. `open -a DropMe <Dateien>` legt die Dateien in ein neues Fenster.
+    /// “Open With DropMe” or `open -a DropMe <files>` puts the files on a new shelf.
     func application(_ application: NSApplication, open urls: [URL]) {
         let fileURLs = urls.filter(\.isFileURL)
         guard !fileURLs.isEmpty else { return }
@@ -50,7 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return shelf
     }
 
-    /// Wurde das Ziehen abgebrochen oder woanders abgelegt, verschwindet das leere Fenster wieder.
+    /// If the drag was cancelled or dropped elsewhere, the empty shelf goes away again.
     private func closeAbandonedShelf() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
             guard let shelf = self?.dragShelf else { return }
@@ -60,7 +60,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func newShelf() {
-        // Mehrere neue Fenster leicht versetzt, damit sie nicht genau übereinander liegen.
+        // Offset new shelves slightly so they don't sit exactly on top of each other.
         let frame = NSScreen.main?.visibleFrame ?? .zero
         let offset = CGFloat(shelves.count % 6) * 24
         openShelf(at: NSPoint(x: frame.midX + offset, y: frame.midY - offset))
