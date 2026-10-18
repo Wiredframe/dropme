@@ -2,37 +2,39 @@
 
 # DropMe
 
-Ein kleines, privates Ablagefenster für macOS, angelehnt an Dropover. Kein Netzwerk, keine Telemetrie, kein Konto.
+A small, private drop shelf for macOS, inspired by Dropover. No network, no telemetry, no account.
 
-<p align="center"><img src="docs/fenster.png" width="240" alt="DropMe-Fenster mit drei Bildern"></p>
+<p align="center"><img src="docs/fenster.png" width="240" alt="DropMe shelf holding three images"></p>
 
-## Was es kann
+## What it does
 
-- **Umschalttaste beim Ziehen** von Dateien öffnet ein schwebendes Fenster unter dem Mauszeiger. Wird nichts abgelegt, verschwindet es wieder.
-- Dateien hineinlegen (auch aus mehreren Orten und als Anhang aus Mail), später gesammelt wieder herausziehen. Werden sie dabei verschoben, leert sich das Fenster von selbst.
-- **Aktionsmenü** (Chevron oben rechts): Öffnen mit, Im Finder anzeigen, Schnellansicht, Teilen (AirDrop, Mail, Nachrichten, Notizen, Mehr), Aus Zwischenablage hinzufügen, Kopieren, Kopieren nach, Bewegen nach, Schnellziele, Fenster leeren.
-- **Schnellziele**: Ordner mit eigenem Namen, die direkt im Menü stehen und dorthin kopieren. Gepflegt über „Einstellungen …“ im Aktionsmenü.
-- **Pille** unten: Name bzw. Anzahl, ein Klick listet die einzelnen Dateien (öffnen, zeigen, entfernen).
-- Tastatur: Leertaste Schnellansicht, Esc oder ⌘W schließen, ⌘C kopieren, ⌘V einfügen, Doppelklick öffnet.
-- Menüleiste: Neues Fenster, Alle schließen, Beim Anmelden starten.
-- `open -a DropMe <Dateien>` legt Dateien direkt in ein neues Fenster.
-- Liquid Glass ab macOS 26, dezente Animationen (abgeschaltet bei „Bewegung reduzieren“), Hell- und Dunkelmodus.
+- **Hold Shift while dragging** files to open a floating shelf under the pointer. If nothing is dropped on it, it goes away again.
+- Drop files on it (from several places, also attachments from Mail), then drag them all out again later. If they get moved along the way, the shelf empties itself.
+- **Action menu** (chevron at the top right): Open With, Show in Finder, Quick Look, Share (AirDrop, Mail, Messages, Notes, More), Add from Clipboard, Copy, Copy to, Move to, quick destinations, Clear Shelf.
+- **Quick destinations**: folders with a name of your choice that sit directly in the menu and copy there. Managed via “Einstellungen …” in the action menu.
+- **Pill** at the bottom: name or item count; a click lists the individual files (open, reveal, remove).
+- Keyboard: Space for Quick Look, Esc or ⌘W to close, ⌘C to copy, ⌘V to paste, double-click to open.
+- Menu bar: New Shelf, Close All, Launch at Login.
+- `open -a DropMe <files>` puts files straight onto a new shelf.
+- Liquid Glass on macOS 26 and later, subtle animations (turned off with “Reduce motion”), light and dark mode.
 
-## Privatsphäre
+The user interface is in German for now.
 
-DropMe enthält keinen Netzwerkcode. Prüfen lässt sich das am Binary:
+## Privacy
+
+DropMe contains no networking code. You can check that on the binary:
 
 ```sh
-otool -L /Applications/DropMe.app/Contents/MacOS/DropMe        # kein CFNetwork, kein Network.framework
-nm -u /Applications/DropMe.app/Contents/MacOS/DropMe | grep -i urlsession   # leer
+otool -L /Applications/DropMe.app/Contents/MacOS/DropMe        # no CFNetwork, no Network.framework
+nm -u /Applications/DropMe.app/Contents/MacOS/DropMe | grep -i urlsession   # empty
 ```
 
-Beim Erkennen eines Ziehvorgangs liest DropMe nur die Typen auf dem Drag-Pasteboard, nie den Inhalt.
-Teilen läuft über die Dienste von macOS (AirDrop, Mail …), DropMe selbst sendet nichts.
+To detect a drag, DropMe only looks at the types on the drag pasteboard, never at its contents.
+Sharing goes through macOS services (AirDrop, Mail …); DropMe itself sends nothing.
 
 ## Installation
 
-Per Homebrew:
+With Homebrew:
 
 ```sh
 brew tap wiredframe/tap
@@ -40,24 +42,26 @@ brew trust --cask wiredframe/tap/dropme
 brew install --cask wiredframe/tap/dropme
 ```
 
-Oder von Hand: `DropMe-<Version>.zip` unter [Releases](../../releases) laden, entpacken, `DropMe.app` nach `/Applications` ziehen.
+Or by hand: download `DropMe-<version>.zip` from [Releases](../../releases), unzip it and move `DropMe.app` to `/Applications`.
 
-Die App ist mit einer Developer ID signiert, aber noch nicht notarisiert. Beim ersten Start blockiert macOS sie deshalb (der Homebrew-Cask erledigt das selbst). Entweder in den Systemeinstellungen unter „Datenschutz & Sicherheit“ auf „Trotzdem öffnen“ klicken oder einmal im Terminal:
+Requires a Mac with Apple Silicon and macOS 14 or later.
+
+The app is signed with a Developer ID but not notarized yet, so macOS blocks the first launch (the Homebrew cask takes care of that). Either click “Open Anyway” under System Settings › Privacy & Security, or run once in Terminal:
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/DropMe.app
 ```
 
-## Bauen
+## Building
 
 ```sh
-./build.sh            # baut build/DropMe.app (Apple Silicon, mit Developer ID signiert, sonst ad hoc)
-./build.sh --install  # zusätzlich nach ~/Applications und starten
-./build.sh --zip      # zusätzlich build/DropMe-<Version>.zip, notarisiert, wenn ein notarytool-Profil „notary“ existiert
+./build.sh            # builds build/DropMe.app (Apple Silicon, signed with a Developer ID if available, otherwise ad hoc)
+./build.sh --install  # also copies it to ~/Applications and launches it
+./build.sh --zip      # also creates build/DropMe-<version>.zip, notarized if a notarytool profile “notary” exists
 ```
 
-Voraussetzung: Mac mit Apple Silicon, Xcode bzw. Swift 5.10+, macOS 14+.
+Requirements: a Mac with Apple Silicon, Xcode or Swift 5.10+, macOS 14+.
 
-## Lizenz
+## License
 
 MIT
