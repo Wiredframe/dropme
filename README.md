@@ -14,7 +14,7 @@ A small, private drop shelf for macOS, inspired by Dropover. No network, no tele
 - **Quick destinations**: folders with a name of your choice that sit directly in the menu and copy there. Managed via “Einstellungen …” in the action menu.
 - **Pill** at the bottom: name or item count; a click lists the individual files (open, reveal, remove).
 - Keyboard: Space for Quick Look, Esc or ⌘W to close, ⌘C to copy, ⌘V to paste, double-click to open.
-- Menu bar: New Shelf, Close All, Launch at Login.
+- Menu bar: New Shelf, Close All, Launch at Login, Hide Menu Bar Icon (open DropMe again from the Finder to bring it back).
 - `open -a DropMe <files>` puts files straight onto a new shelf.
 - Liquid Glass on macOS 26 and later, subtle animations (turned off with “Reduce motion”), light and dark mode.
 

@@ -7,6 +7,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var shelves: [ShelfWindow] = []
     /// The shelf last opened by dragging, as long as nothing has been dropped on it.
     private weak var dragShelf: ShelfWindow?
+    private var hideIcon: Bool {
+        get { UserDefaults.standard.bool(forKey: "hideIcon") }
+        set { UserDefaults.standard.set(newValue, forKey: "hideIcon"); statusItem.isVisible = !newValue }
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -14,12 +18,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let menu = NSMenu()
         menu.delegate = self
         statusItem.menu = menu
+        statusItem.isVisible = !hideIcon
 
         watcher.onTrigger = { [weak self] point in
             self?.dragShelf = self?.openShelf(at: point)
         }
         watcher.onDragEnded = { [weak self] in self?.closeAbandonedShelf() }
         watcher.start()
+    }
+
+    /// With the icon hidden, launching the app again (Finder, `open -a DropMe`) brings it back.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        hideIcon = false
+        return false
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -30,6 +41,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let login = menu.addItem(withTitle: "Beim Anmelden starten", action: #selector(toggleLogin), keyEquivalent: "")
         login.target = self
         login.state = SMAppService.mainApp.status == .enabled ? .on : .off
+        let hide = menu.addItem(withTitle: "Menüsymbol ausblenden", action: #selector(hideStatusItem), keyEquivalent: "")
+        hide.target = self
+        hide.toolTip = "DropMe im Finder erneut öffnen, um es zurückzuholen."
         menu.addItem(.separator())
         menu.addItem(withTitle: "DropMe beenden", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
     }
@@ -68,6 +82,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func closeAll() {
         shelves.forEach { $0.dismiss() }
+    }
+
+    @objc private func hideStatusItem() {
+        hideIcon = true
     }
 
     @objc private func toggleLogin() {
