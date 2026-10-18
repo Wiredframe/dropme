@@ -2,7 +2,7 @@ import Foundation
 
 /// Ordner für „Kopieren nach“ und „Bewegen nach“.
 /// Schnellziele erscheinen zusätzlich direkt im Menü und kopieren dorthin. Gepflegt werden sie
-/// in den Einstellungen, gespeichert als `Schnellziele` = ["Name=Pfad", …] in den Defaults.
+/// in den Einstellungen, gespeichert als `Schnellziele` = [{name, path}, …] in den Defaults.
 struct Destination {
     let name: String
     let url: URL
@@ -21,16 +21,26 @@ struct Destination {
     /// Alle gespeicherten Schnellziele, auch solche, deren Ordner gerade fehlt.
     static var quickStored: [Destination] {
         get {
-            let entries = UserDefaults.standard.stringArray(forKey: "Schnellziele") ?? []
+            let entries = UserDefaults.standard.array(forKey: "Schnellziele") ?? []
             return entries.compactMap { entry in
-                let parts = entry.split(separator: "=", maxSplits: 1).map(String.init)
-                guard parts.count == 2 else { return nil }
-                let url = URL(fileURLWithPath: (parts[1] as NSString).expandingTildeInPath, isDirectory: true)
-                return Destination(name: parts[0], url: url)
+                let name: String, path: String
+                if let dict = entry as? [String: String], let n = dict["name"], let p = dict["path"] {
+                    (name, path) = (n, p)
+                } else if let text = entry as? String {
+                    // Älteres Format „Name=Pfad“; der Pfad beginnt mit / oder ~, das letzte solche „=“ trennt.
+                    guard let split = text.range(of: "=/", options: .backwards) ?? text.range(of: "=~", options: .backwards)
+                    else { return nil }
+                    (name, path) = (String(text[..<split.lowerBound]), String(text[text.index(after: split.lowerBound)...]))
+                } else {
+                    return nil
+                }
+                guard !name.isEmpty, !path.isEmpty else { return nil }
+                let url = URL(fileURLWithPath: (path as NSString).expandingTildeInPath, isDirectory: true)
+                return Destination(name: name, url: url)
             }
         }
         set {
-            UserDefaults.standard.set(newValue.map { "\($0.name)=\($0.url.path)" }, forKey: "Schnellziele")
+            UserDefaults.standard.set(newValue.map { ["name": $0.name, "path": $0.url.path] }, forKey: "Schnellziele")
         }
     }
 

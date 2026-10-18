@@ -211,6 +211,8 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
             window?.performDrag(with: event)
             return
         }
+        pruneMissing()
+        guard !items.isEmpty else { return }
         if event.clickCount == 2 {
             items.forEach { NSWorkspace.shared.open($0) }
             return
@@ -280,10 +282,19 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
     // MARK: Menüs
 
     @objc private func showActionMenu(_ sender: NSButton) {
+        pruneMissing()
         popUp(actionMenu(), from: sender)
     }
 
+    /// Entfernt Objekte, deren Datei inzwischen gelöscht oder woanders hin bewegt wurde.
+    private func pruneMissing() {
+        let existing = items.filter { FileManager.default.fileExists(atPath: $0.path) }
+        if existing.count != items.count { setItems(existing) }
+    }
+
     private func showItemMenu() {
+        pruneMissing()
+        guard !items.isEmpty else { return }
         let menu = NSMenu()
         for url in items {
             let entry = NSMenuItem(title: url.lastPathComponent, action: nil, keyEquivalent: "")
@@ -331,7 +342,8 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
         }
 
         let paste = item("Aus Zwischenablage hinzufügen", "doc.on.clipboard", #selector(addFromClipboard))
-        paste.isEnabled = NSPasteboard.general.canReadObject(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true])
+        // Nur die Typen prüfen: Inhalte lesen erst beim Klick, sonst fragt macOS nach Zugriff auf die Zwischenablage.
+        paste.isEnabled = NSPasteboard.general.types?.contains(.fileURL) == true
         menu.addItem(paste)
 
         if hasItems {
@@ -519,6 +531,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
     // MARK: Schnellansicht
 
     @objc private func showQuickLook() {
+        pruneMissing()
         guard !items.isEmpty, let panel = QLPreviewPanel.shared() else { return }
         if panel.isVisible {
             panel.orderOut(nil)
@@ -544,7 +557,7 @@ final class ShelfView: NSView, NSDraggingSource, QLPreviewPanelDataSource {
     func numberOfPreviewItems(in panel: QLPreviewPanel!) -> Int { items.count }
 
     func previewPanel(_ panel: QLPreviewPanel!, previewItemAt index: Int) -> QLPreviewItem! {
-        items[index] as NSURL
+        items.indices.contains(index) ? items[index] as NSURL : nil
     }
 }
 
