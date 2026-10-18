@@ -42,7 +42,7 @@ brew install --cask wiredframe/tap/dropme
 
 Oder von Hand: `DropMe-<Version>.zip` unter [Releases](../../releases) laden, entpacken, `DropMe.app` nach `/Applications` ziehen.
 
-Die App ist nur ad hoc signiert, nicht notarisiert. Beim ersten Start blockiert macOS sie deshalb. Entweder in den Systemeinstellungen unter „Datenschutz & Sicherheit“ auf „Trotzdem öffnen“ klicken oder einmal im Terminal:
+Die App ist mit einer Developer ID signiert, aber noch nicht notarisiert. Beim ersten Start blockiert macOS sie deshalb (der Homebrew-Cask erledigt das selbst). Entweder in den Systemeinstellungen unter „Datenschutz & Sicherheit“ auf „Trotzdem öffnen“ klicken oder einmal im Terminal:
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/DropMe.app
@@ -51,12 +51,12 @@ xattr -dr com.apple.quarantine /Applications/DropMe.app
 ## Bauen
 
 ```sh
-./build.sh            # baut build/DropMe.app (Universal, ad hoc signiert)
+./build.sh            # baut build/DropMe.app (Apple Silicon, mit Developer ID signiert, sonst ad hoc)
 ./build.sh --install  # zusätzlich nach ~/Applications und starten
-./build.sh --zip      # zusätzlich build/DropMe-<Version>.zip
+./build.sh --zip      # zusätzlich build/DropMe-<Version>.zip, notarisiert, wenn ein notarytool-Profil „notary“ existiert
 ```
 
-Voraussetzung: Xcode bzw. Swift 5.10+, macOS 14+.
+Voraussetzung: Mac mit Apple Silicon, Xcode bzw. Swift 5.10+, macOS 14+.
 
 ## Lizenz
 
